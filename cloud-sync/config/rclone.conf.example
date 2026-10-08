@@ -1,0 +1,15 @@
+# Real file: config/rclone.conf (gitignored). Tokens come from the laptop:
+#   rclone authorize yandex
+#   rclone authorize drive <unpadded base64 of {"client_id":..,"client_secret":..,"scope":"drive.readonly"}>, see README
+[yandex]
+type = yandex
+token = {"access_token":"...","token_type":"OAuth","expiry":"..."}
+
+[gdrive]
+type = drive
+client_id = ....apps.googleusercontent.com
+client_secret = ...
+scope = drive.readonly
+skip_dangling_shortcuts = true
+export_formats = docx,xlsx,pptx,svg
+token = {"access_token":"...","token_type":"Bearer","refresh_token":"...","expiry":"..."}

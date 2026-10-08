@@ -1,0 +1,19 @@
+# Cloud -> server mirror. See README.md.
+services:
+  cloud-sync:
+    image: rclone/rclone:1.75
+    container_name: cloud-sync
+    restart: unless-stopped
+    user: "${PUID:-0}:${PGID:-0}"
+    entrypoint: ["/scripts/loop.sh"]
+    environment:
+      TZ: ${TZ:-UTC}
+      REMOTES: ${REMOTES:-yandex gdrive}
+      INTERVAL: ${INTERVAL:-6h}
+      HISTORY_DAYS: ${HISTORY_DAYS:-365}
+      PING_URL: ${PING_URL:-}
+    volumes:
+      - ./config:/config/rclone
+      - ./scripts:/scripts:ro
+      - ${DATA_DIR}:/data
+      - ${HISTORY_DIR}:/history

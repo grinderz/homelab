@@ -1,0 +1,6 @@
+# Repo-local override of ~/.config/homelab/config.mk (which dotfiles renders
+# from [data.homelab] in the private chezmoi.toml): cp local.mk.example
+# local.mk (gitignored, never deployed)
+# ssh alias of the docker host and the working copy of this repo on it
+DEPLOY_HOST := myserver
+DEPLOY_PATH := /opt/homelab
