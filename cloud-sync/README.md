@@ -58,6 +58,11 @@ Layout on disk:
 
 ## Operations
 
+Alerts: a failed run posts to the notify stack (`NOTIFY_URL`, tag `primary`,
+then `fallback` when the gateway reports a delivery failure) with the exit code
+and the last `ERROR` line; `NOTIFY_OK=1` adds one line per successful run with
+the transfer stats. The gateway being down costs one log line, never the sync.
+
 - Logs: `docker logs cloud-sync` (summary) and `$HISTORY_DIR/<remote>/sync.log`.
 - Force a run now: `docker compose exec cloud-sync /scripts/sync.sh yandex`.
 - Restore a file: it is a plain file under `$DATA_DIR`, or under the dated

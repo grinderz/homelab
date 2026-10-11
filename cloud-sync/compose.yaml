@@ -12,8 +12,17 @@ services:
       INTERVAL: ${INTERVAL:-6h}
       HISTORY_DAYS: ${HISTORY_DAYS:-365}
       PING_URL: ${PING_URL:-}
+      NOTIFY_URL: ${NOTIFY_URL:-http://notify:8000/notify/homelab}
+      NOTIFY_OK: ${NOTIFY_OK:-}
     volumes:
       - ./config:/config/rclone
       - ./scripts:/scripts:ro
       - ${DATA_DIR}:/data
       - ${HISTORY_DIR}:/history
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true

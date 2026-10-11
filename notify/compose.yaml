@@ -1,0 +1,35 @@
+# Alert gateway: Apprise API. Stacks and laptops POST text + tag to
+# http://notify:8000/notify/homelab, channels live in config/homelab.yml
+# (rendered by dotfiles from the private toml). See README.md.
+services:
+  notify:
+    image: caronc/apprise:1.5
+    container_name: notify
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      # one config file per key under /config: homelab.yml -> key "homelab"
+      APPRISE_STATEFUL_MODE: simple
+      # the config is managed from the repo side, never through the web UI
+      APPRISE_CONFIG_LOCK: "yes"
+      APPRISE_ATTACH_SIZE: "0"
+      # no persistent cache on disk; /config stays ours (the lock keeps the API
+      # from writing it), but the mount cannot be read-only or /status fails
+      APPRISE_STORAGE_MODE: memory
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      - ./config:/config
+    networks:
+      - default
+      - proxy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8000/status >/dev/null || exit 1"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
+networks:
+  proxy:
+    external: true

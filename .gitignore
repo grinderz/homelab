@@ -2,6 +2,7 @@
 .env
 */config/rclone.conf
 */config/*.filter
+*/config/*.yml
 *.log
 # laptop-side config, see local.mk.example
 /local.mk

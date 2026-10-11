@@ -55,9 +55,11 @@ The host comes from `~/.config/homelab/config.mk` (dotfiles renders it from
     make deploy.diff / deploy                 rsync the repo to the host (.env, rclone.conf untouched)
     make up.<stack> / logs.<stack> / update.<stack>   docker compose on the host
     make lint                                 compose config, shellcheck, pre-commit
-    make secrets.pull / secrets.push          host-side .env, rclone.conf, *.filter <-> gitignored tree copy;
-                                              <stack>/.env and config/*.filter come from ~/.config/homelab/<stack>/ (dotfiles) when present
+    make secrets.pull / secrets.push          host-side .env, rclone.conf, config/*.filter, config/*.yml <-> gitignored tree copy;
+                                              <stack>/.env and config/{*.filter,*.yml} come from ~/.config/homelab/<stack>/ (dotfiles) when present
 
 ## Stacks
 
 - `cloud-sync` — mirrors Yandex Disk and Google Drive to local disk with rclone.
+- `notify` — Apprise gateway: every stack and the laptops post alerts to one
+  URL, channels (Telegram now, XMPP/Discord/mail later) live in the private toml.

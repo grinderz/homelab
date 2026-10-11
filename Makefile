@@ -60,10 +60,10 @@ stacks: ## List stacks
 # paths are also left alone on the receiver
 DEPLOY_EXCLUDES := .git .claude .idea .DS_Store /local.mk
 # host state that must never be overwritten or deleted from here: .env and
-# the filters are filled on the host, rclone rewrites rclone.conf on token
-# refresh. Excluded from sending and protected with an rsync 'P' filter
+# the filters and the rendered service configs (config/*.yml) are filled on
+# the host, rclone rewrites rclone.conf on token refresh. Excluded from sending and protected with an rsync 'P' filter
 # against --delete. secrets.pull/push below move exactly this set
-DEPLOY_PROTECT := .env config/rclone.conf config/*.filter
+DEPLOY_PROTECT := .env config/rclone.conf config/*.filter config/*.yml
 
 # --no-owner --no-group: files land as the ssh user, config/ dirs keep the
 # uid the containers write with
@@ -91,11 +91,11 @@ networks: ## Create the shared docker networks on the host (idempotent)
 ##@ Secrets (host-side files, gitignored here)
 
 
-# <stack>/.env and <stack>/config/*.filter are copies of the same paths under
+# <stack>/.env, <stack>/config/*.filter and <stack>/config/*.yml are copies of the same paths under
 # ~/.config/homelab/<stack>/ (dotfiles renders them from [data.homelab.*] in
 # its private toml), refreshed whenever the rendered one is newer; secrets.push
 # then ships them. Stacks without rendered files keep hand-written ones
-HOST_FILES := $(patsubst $(XDG_CONFIG_HOME)/homelab/%,%,$(wildcard $(XDG_CONFIG_HOME)/homelab/*/.env $(XDG_CONFIG_HOME)/homelab/*/config/*.filter))
+HOST_FILES := $(patsubst $(XDG_CONFIG_HOME)/homelab/%,%,$(wildcard $(XDG_CONFIG_HOME)/homelab/*/.env $(XDG_CONFIG_HOME)/homelab/*/config/*.filter $(XDG_CONFIG_HOME)/homelab/*/config/*.yml))
 
 $(HOST_FILES): %: $(XDG_CONFIG_HOME)/homelab/%
 	cp "$<" "$@"
@@ -107,14 +107,22 @@ SECRETS_RSYNC = rsync -av --no-owner --no-group --prune-empty-dirs \
 	--include='*/' $(foreach p,$(DEPLOY_PROTECT),--include='$(p)') --exclude='*'
 
 .PHONY: secrets.pull
-secrets.pull: ## Copy .env, rclone.conf, *.filter of every stack from the host into the tree
+secrets.pull: ## Copy .env, rclone.conf, config/*.filter, config/*.yml of every stack from the host into the tree
 	$(Deploy/Check)
 	$(SECRETS_RSYNC) "$(DEPLOY_HOST):$(DEPLOY_PATH)/" ./
 
+# after the copy every stack's .env and config/ are chowned to the PUID:PGID
+# its .env names (0 when unset), so a service running as that uid can read
+# the 0600 files rsync just created as the ssh user
 .PHONY: secrets.push
-secrets.push: $(HOST_FILES) ## Copy them to the host (.env and filters from dotfiles, rclone.conf from the tree); never deletes
+secrets.push: $(HOST_FILES) ## Copy them to the host (.env, filters and service configs from dotfiles, rclone.conf from the tree); never deletes
 	$(Deploy/Check)
 	$(SECRETS_RSYNC) --chmod=F600 ./ "$(DEPLOY_HOST):$(DEPLOY_PATH)/"
+	ssh $(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && for s in $(STACKS); do \
+		[ -f "$$s/.env" ] || continue; \
+		u=$$(sed -n "s/^PUID=//p" "$$s/.env"); g=$$(sed -n "s/^PGID=//p" "$$s/.env"); \
+		chown -R "$${u:-0}:$${g:-0}" "$$s/.env" "$$s/config" 2>/dev/null || true; \
+	done'
 
 
 ##@ Stacks (on the host)
