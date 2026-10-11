@@ -23,6 +23,9 @@ stacks. Currently on Unraid, meant to move to Proxmox or anything else.
 - Data stays outside the repo. Config a service writes to itself (tokens,
   databases) is mounted as a directory, gitignored.
 - Images are pinned to a minor version, not `latest`.
+  Renovate (`renovate.json`) opens the bump PRs: minor/patch of all images in
+  one weekly PR, majors one by one; merge, then `make deploy` and
+  `make update.<stack>`.
 
 ## New host
 
