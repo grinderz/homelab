@@ -65,5 +65,6 @@ The host comes from `~/.config/homelab/config.mk` (dotfiles renders it from
   docker host; alerts go through `notify`.
 - `gatus` — uptime checks and status page; cloud-sync heartbeats land here,
   alerts go through `notify`.
+- `miniflux` — feed reader with its own postgres.
 - `notify` — Apprise gateway: every stack and the laptops post alerts to one
   URL, channels (Telegram now, XMPP/Discord/mail later) live in the private toml.
