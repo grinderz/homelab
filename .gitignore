@@ -3,6 +3,7 @@
 */config/rclone.conf
 */config/*.filter
 */config/*.yml
+*/config/*.yaml
 # host-specific mounts, rendered like .env
 */compose.override.yaml
 *.log

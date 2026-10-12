@@ -11,7 +11,8 @@ services:
       REMOTES: ${REMOTES:-yandex gdrive}
       INTERVAL: ${INTERVAL:-6h}
       HISTORY_DAYS: ${HISTORY_DAYS:-365}
-      PING_URL: ${PING_URL:-}
+      HEARTBEAT_URL: ${HEARTBEAT_URL:-}
+      HEARTBEAT_TOKEN: ${HEARTBEAT_TOKEN:-}
       NOTIFY_URL: ${NOTIFY_URL:-http://notify:8000/notify/homelab}
       NOTIFY_OK: ${NOTIFY_OK:-}
     volumes:

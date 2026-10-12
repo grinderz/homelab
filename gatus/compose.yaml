@@ -1,0 +1,23 @@
+# Uptime monitoring: gatus. What it watches is in config/config.yaml (rendered
+# by dotfiles from the private toml), alerts go through the notify stack,
+# cloud-sync reports heartbeats to it. See README.md.
+services:
+  gatus:
+    image: twinproduction/gatus:v5.37.0
+    container_name: gatus
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+      GATUS_CONFIG_PATH: /config/config.yaml
+    ports:
+      - "${PORT:-8083}:8080"
+    volumes:
+      - ./config:/config:ro
+      - ${DATA_DIR}:/data
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true

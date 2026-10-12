@@ -62,6 +62,9 @@ Alerts: a failed run posts to the notify stack (`NOTIFY_URL`, tag `primary`,
 then `fallback` when the gateway reports a delivery failure) with the exit code
 and the last `ERROR` line; `NOTIFY_OK=1` adds one line per successful run with
 the transfer stats. The gateway being down costs one log line, never the sync.
+Heartbeat: every run also reports `success=true|false` to the gatus external
+endpoint `cloud-sync_<remote>` (`HEARTBEAT_URL`, `HEARTBEAT_TOKEN`), so a run
+that never happened shows up as a gatus alert after its heartbeat deadline.
 
 - Logs: `docker logs cloud-sync` (summary) and `$HISTORY_DIR/<remote>/sync.log`.
 - Force a run now: `docker compose exec cloud-sync /scripts/sync.sh yandex`.

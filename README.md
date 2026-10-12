@@ -63,5 +63,7 @@ The host comes from `~/.config/homelab/config.mk` (dotfiles renders it from
 - `cloud-sync` — mirrors Yandex Disk and Google Drive to local disk with rclone.
 - `beszel` — server monitoring: hub (UI, sqlite history) and the agent of the
   docker host; alerts go through `notify`.
+- `gatus` — uptime checks and status page; cloud-sync heartbeats land here,
+  alerts go through `notify`.
 - `notify` — Apprise gateway: every stack and the laptops post alerts to one
   URL, channels (Telegram now, XMPP/Discord/mail later) live in the private toml.

@@ -1,8 +1,9 @@
 #!/bin/sh
 # sync.sh <remote>: mirror <remote>: into /data/<remote>.
 # Deleted or overwritten files land in /history/<remote>/<date>; those older than
-# $HISTORY_DAYS are pruned. $PING_URL (healthchecks-style) gets a ping on success,
-# $PING_URL/fail on error, both with the remote name appended as a query.
+# $HISTORY_DAYS are pruned. $HEARTBEAT_URL (gatus external endpoint, %s = the
+# remote) gets the result after every run with $HEARTBEAT_TOKEN as bearer, so
+# gatus alerts on a failed or a missing run.
 # $NOTIFY_URL (the notify stack, Apprise) gets a message on failure, tag
 # primary, then fallback if the gateway reports a delivery failure; with
 # NOTIFY_OK=1 also one line on success.
@@ -25,9 +26,11 @@ notify() {
 urlenc() {
     printf '%s' "$1" | od -An -tx1 -v | tr ' ' '%' | tr -d '\n'
 }
-# notify_fail <title> <body>: primary, then fallback
+# notify_fail <title> <body>: primary, once more after 5s (the gateway does
+# not retry a channel that blipped), then fallback
 notify_fail() {
-    notify primary "$1" "$2" || notify fallback "$1" "$2" \
+    notify primary "$1" "$2" || { sleep 5; notify primary "$1" "$2"; } \
+        || notify fallback "$1" "$2" \
         || echo "$(date '+%F %T') $remote: notify failed" | tee -a "$log"
 }
 
@@ -60,9 +63,12 @@ elif [ "${NOTIFY_OK:-}" = 1 ]; then
     stats=$(grep -E 'NOTICE: +[0-9.]+ [KMG]?i?B / ' "$log" | tail -1 | sed -E 's/.*NOTICE: +//')
     notify primary "cloud-sync: $remote ok" "${stats:-done}" || true
 fi
-if [ -n "${PING_URL:-}" ]; then
-    url=$PING_URL
-    [ "$rc" -eq 0 ] || url=$PING_URL/fail
-    wget -qO- --timeout 10 "$url?remote=$remote" >/dev/null 2>&1 || true
+if [ -n "${HEARTBEAT_URL:-}" ]; then
+    # shellcheck disable=SC2059  # %s in the URL is the remote slot by design
+    hb=$(printf "$HEARTBEAT_URL" "$remote")
+    ok=true; [ "$rc" -eq 0 ] || ok=false
+    wget -qO- -T 10 --post-data "" --header "Authorization: Bearer ${HEARTBEAT_TOKEN:-}" \
+        "$hb?success=$ok&error=$(urlenc "rc=$rc")" >/dev/null 2>&1 \
+        || echo "$(date '+%F %T') $remote: heartbeat failed" | tee -a "$log"
 fi
 exit $rc
