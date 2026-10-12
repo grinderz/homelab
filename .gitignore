@@ -3,6 +3,8 @@
 */config/rclone.conf
 */config/*.filter
 */config/*.yml
+# host-specific mounts, rendered like .env
+*/compose.override.yaml
 *.log
 # laptop-side config, see local.mk.example
 /local.mk

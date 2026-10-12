@@ -1,0 +1,42 @@
+# Server monitoring: beszel hub (web UI, sqlite in DATA_DIR) + the agent for
+# this host. See README.md.
+services:
+  beszel:
+    image: henrygd/beszel:0.21
+    container_name: beszel
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+    ports:
+      - "${PORT:-8090}:8090"
+    volumes:
+      - ${DATA_DIR}:/beszel_data
+    networks:
+      - default
+      - proxy
+
+  beszel-agent:
+    image: henrygd/beszel-agent:0.21
+    container_name: beszel-agent
+    restart: unless-stopped
+    # host network: the agent reports the host's interfaces and listens on
+    # AGENT_PORT for the hub, which reaches it at the host address
+    network_mode: host
+    environment:
+      TZ: ${TZ:-UTC}
+      LISTEN: ${AGENT_PORT:-45876}
+      # the hub's public key (Settings > Add system shows it); not a secret
+      KEY: ${AGENT_KEY}
+      FILESYSTEM: /
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - beszel-agent:/var/lib/beszel-agent
+      # extra disks (one bind per disk under /extra-filesystems/<label>) are
+      # host-specific and come from compose.override.yaml, see README.md
+
+volumes:
+  beszel-agent:
+
+networks:
+  proxy:
+    external: true

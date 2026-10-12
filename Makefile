@@ -59,11 +59,12 @@ stacks: ## List stacks
 # never sent to the host; under --delete (without --delete-excluded) excluded
 # paths are also left alone on the receiver
 DEPLOY_EXCLUDES := .git .claude .idea .DS_Store /local.mk
-# host state that must never be overwritten or deleted from here: .env and
-# the filters and the rendered service configs (config/*.yml) are filled on
-# the host, rclone rewrites rclone.conf on token refresh. Excluded from sending and protected with an rsync 'P' filter
+# host state that must never be overwritten or deleted from here: .env, the
+# compose.override.yaml with host-specific mounts, the filters and the rendered
+# service configs (config/*.yml) are filled on the host, rclone rewrites
+# rclone.conf on token refresh. Excluded from sending and protected with an rsync 'P' filter
 # against --delete. secrets.pull/push below move exactly this set
-DEPLOY_PROTECT := .env config/rclone.conf config/*.filter config/*.yml
+DEPLOY_PROTECT := .env compose.override.yaml config/rclone.conf config/*.filter config/*.yml
 
 # --no-owner --no-group: files land as the ssh user, config/ dirs keep the
 # uid the containers write with
@@ -91,11 +92,12 @@ networks: ## Create the shared docker networks on the host (idempotent)
 ##@ Secrets (host-side files, gitignored here)
 
 
-# <stack>/.env, <stack>/config/*.filter and <stack>/config/*.yml are copies of the same paths under
+# <stack>/.env, <stack>/compose.override.yaml (host-specific mounts), <stack>/config/*.filter
+# and <stack>/config/*.yml are copies of the same paths under
 # ~/.config/homelab/<stack>/ (dotfiles renders them from [data.homelab.*] in
 # its private toml), refreshed whenever the rendered one is newer; secrets.push
 # then ships them. Stacks without rendered files keep hand-written ones
-HOST_FILES := $(patsubst $(XDG_CONFIG_HOME)/homelab/%,%,$(wildcard $(XDG_CONFIG_HOME)/homelab/*/.env $(XDG_CONFIG_HOME)/homelab/*/config/*.filter $(XDG_CONFIG_HOME)/homelab/*/config/*.yml))
+HOST_FILES := $(patsubst $(XDG_CONFIG_HOME)/homelab/%,%,$(wildcard $(XDG_CONFIG_HOME)/homelab/*/.env $(XDG_CONFIG_HOME)/homelab/*/compose.override.yaml $(XDG_CONFIG_HOME)/homelab/*/config/*.filter $(XDG_CONFIG_HOME)/homelab/*/config/*.yml))
 
 $(HOST_FILES): %: $(XDG_CONFIG_HOME)/homelab/%
 	cp "$<" "$@"
