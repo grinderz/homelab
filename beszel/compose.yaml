@@ -14,6 +14,11 @@ services:
     networks:
       - default
       - proxy
+    healthcheck:
+      test: ["CMD", "/beszel", "health", "--url", "http://localhost:8090"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
 
   beszel-agent:
     image: henrygd/beszel-agent:0.21
@@ -33,6 +38,11 @@ services:
       - ${DATA_DIR}/agent:/var/lib/beszel-agent
       # extra disks (one bind per disk under /extra-filesystems/<label>) are
       # host-specific and come from compose.override.yaml, see README.md
+    healthcheck:
+      test: ["CMD", "/agent", "health"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
 
 networks:
   proxy:

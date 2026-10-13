@@ -4,6 +4,7 @@
 */config/*.filter
 */config/*.yml
 */config/*.yaml
+*/config/*.json
 # host-specific mounts, rendered like .env
 */compose.override.yaml
 *.log

@@ -29,6 +29,29 @@ services:
       timeout: 10s
       retries: 3
 
+  # daily pg_dump into DUMP_DIR for the backups (backrest excludes the live
+  # data directory); same image as the database, no port, no UI
+  db-dump:
+    image: postgres:16-alpine
+    container_name: miniflux-db-dump
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/scripts/dump.sh"]
+    environment:
+      TZ: ${TZ:-UTC}
+      PGPASSWORD: ${DB_PASSWORD}
+      KEEP: ${DUMP_KEEP:-7}
+    volumes:
+      - ./scripts:/scripts:ro
+      - ${DUMP_DIR}:/dumps
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f /scripts/dump.sh >/dev/null"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+
   db:
     image: postgres:16-alpine
     container_name: miniflux-db

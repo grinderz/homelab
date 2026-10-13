@@ -23,6 +23,12 @@ services:
     networks:
       - default
       - proxy
+    # the loop is the service: alive as long as loop.sh runs
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f /scripts/loop.sh >/dev/null"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
 
 networks:
   proxy:

@@ -61,6 +61,8 @@ The host comes from `~/.config/homelab/config.mk` (dotfiles renders it from
 ## Stacks
 
 - `cloud-sync` — mirrors Yandex Disk and Google Drive to local disk with rclone.
+- `backrest` — backups of the server itself (restic + web UI) into a local
+  repository, offsite later; alerts via `notify`, heartbeats to `gatus`.
 - `beszel` — server monitoring: hub (UI, sqlite history) and the agent of the
   docker host; alerts go through `notify`.
 - `gatus` — uptime checks and status page; cloud-sync heartbeats land here,

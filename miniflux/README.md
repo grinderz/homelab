@@ -6,7 +6,8 @@ and its own postgres (per-stack database, nothing shared), data under
 `proxy` too (gatus checks `http://miniflux:8080/healthcheck`).
 
     miniflux/
-      compose.yaml          miniflux 2.3 + postgres 16
+      compose.yaml          miniflux 2.3 + postgres 16 + daily pg_dump sidecar
+      scripts/dump.sh       the dump loop
       .env                  PORT, DATA_DIR, TZ, DB_PASSWORD (rendered by dotfiles)
 
 ## Setup
@@ -21,8 +22,9 @@ and its own postgres (per-stack database, nothing shared), data under
 
 ## Operations
 
-- Backup: `docker compose exec -T db pg_dump -U miniflux -Fc miniflux > miniflux-$(date +%F).dump`
-  (the data dir is also in the appdata backup; the dump is the portable form).
+- Backup: the `db-dump` service writes `pg_dump -Fc` daily into `DUMP_DIR`
+  (keeps `DUMP_KEEP`); backrest backs those up and excludes the live `db/`.
+  Restore: `docker compose exec -T db pg_restore -U miniflux -d miniflux --clean --no-owner --role=miniflux < dump`.
 - Postgres major upgrade (16 → 17/18): dump, bump the image tag and `DATA_DIR`
   to a new directory, restore — Renovate opens the major PR, do not merge it
   blindly.

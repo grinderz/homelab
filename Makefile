@@ -64,7 +64,7 @@ DEPLOY_EXCLUDES := .git .claude .idea .DS_Store /local.mk
 # service configs (config/*.yml) are filled on the host, rclone rewrites
 # rclone.conf on token refresh. Excluded from sending and protected with an rsync 'P' filter
 # against --delete. secrets.pull/push below move exactly this set
-DEPLOY_PROTECT := .env compose.override.yaml config/rclone.conf config/*.filter config/*.yml config/*.yaml
+DEPLOY_PROTECT := .env compose.override.yaml config/rclone.conf config/*.filter config/*.yml config/*.yaml config/*.json
 
 # --no-owner --no-group: files land as the ssh user, config/ dirs keep the
 # uid the containers write with
@@ -97,7 +97,7 @@ networks: ## Create the shared docker networks on the host (idempotent)
 # ~/.config/homelab/<stack>/ (dotfiles renders them from [data.homelab.*] in
 # its private toml), refreshed whenever the rendered one is newer; secrets.push
 # then ships them. Stacks without rendered files keep hand-written ones
-HOST_FILES := $(patsubst $(XDG_CONFIG_HOME)/homelab/%,%,$(wildcard $(XDG_CONFIG_HOME)/homelab/*/.env $(XDG_CONFIG_HOME)/homelab/*/compose.override.yaml $(XDG_CONFIG_HOME)/homelab/*/config/*.filter $(XDG_CONFIG_HOME)/homelab/*/config/*.yml $(XDG_CONFIG_HOME)/homelab/*/config/*.yaml))
+HOST_FILES := $(patsubst $(XDG_CONFIG_HOME)/homelab/%,%,$(wildcard $(XDG_CONFIG_HOME)/homelab/*/.env $(XDG_CONFIG_HOME)/homelab/*/compose.override.yaml $(XDG_CONFIG_HOME)/homelab/*/config/*.filter $(XDG_CONFIG_HOME)/homelab/*/config/*.yml $(XDG_CONFIG_HOME)/homelab/*/config/*.yaml $(XDG_CONFIG_HOME)/homelab/*/config/*.json))
 
 $(HOST_FILES): %: $(XDG_CONFIG_HOME)/homelab/%
 	cp "$<" "$@"
