@@ -30,12 +30,9 @@ services:
       FILESYSTEM: /
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - beszel-agent:/var/lib/beszel-agent
+      - ${DATA_DIR}/agent:/var/lib/beszel-agent
       # extra disks (one bind per disk under /extra-filesystems/<label>) are
       # host-specific and come from compose.override.yaml, see README.md
-
-volumes:
-  beszel-agent:
 
 networks:
   proxy:

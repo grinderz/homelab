@@ -39,4 +39,4 @@ Telegram-specific lives here.
   rendered from `[data.homelab.beszel_extra_fs]`, label = a directory on the
   disk, mounted read-only at `/extra-filesystems/<label>`). docker compose and
   Compose Manager both pick the file up on their own.
-- Data is tiny (a few MB); it is part of the appdata backup, nothing else to do.
+- Data is tiny (a few MB, hub + agent cache under `DATA_DIR`); it is part of the appdata backup, nothing else to do.
