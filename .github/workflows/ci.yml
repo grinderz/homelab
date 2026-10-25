@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # docker compose (lint.compose) and go (actionlint hook) come with the
+  # ubuntu runner, uvx runs pre-commit at the version pinned in the Makefile.
+  # shellcheck is pinned instead of the runner's package: the findings differ
+  # between releases, the pin keeps CI and the workstations on the same ruleset
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      SHELLCHECK_VERSION: 0.11.0
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.2
+
+      - name: install shellcheck
+        run: |
+          curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+            | sudo tar -xJ --strip-components=1 -C /usr/local/bin "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
+          shellcheck --version
+
+      - name: lint
+        run: make lint

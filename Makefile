@@ -113,18 +113,14 @@ secrets.pull: ## Copy .env, rclone.conf, config/*.filter, config/*.yml of every 
 	$(Deploy/Check)
 	$(SECRETS_RSYNC) "$(DEPLOY_HOST):$(DEPLOY_PATH)/" ./
 
-# after the copy every stack's .env and config/ are chowned to the PUID:PGID
-# its .env names (0 when unset), so a service running as that uid can read
-# the 0600 files rsync just created as the ssh user
+# after the copy secrets-chown.sh gives every stack's .env and config/ to the
+# PUID:PGID its .env names, so a service running as that uid can read the 0600
+# files rsync just created as the ssh user
 .PHONY: secrets.push
 secrets.push: $(HOST_FILES) ## Copy them to the host (.env, filters and service configs from dotfiles, rclone.conf from the tree); never deletes
 	$(Deploy/Check)
 	$(SECRETS_RSYNC) --chmod=F600 ./ "$(DEPLOY_HOST):$(DEPLOY_PATH)/"
-	ssh $(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && for s in $(STACKS); do \
-		[ -f "$$s/.env" ] || continue; \
-		u=$$(sed -n "s/^PUID=//p" "$$s/.env"); g=$$(sed -n "s/^PGID=//p" "$$s/.env"); \
-		chown -R "$${u:-0}:$${g:-0}" "$$s/.env" "$$s/config" 2>/dev/null || true; \
-	done'
+	ssh $(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && sh ./secrets-chown.sh'
 
 
 ##@ Stacks (on the host)

@@ -6,6 +6,7 @@ stacks. Currently on Unraid, meant to move to Proxmox or anything else.
 
     homelab/
       networks.sh        creates shared networks (run once per host)
+      secrets-chown.sh   hands .env and config/ to each stack's PUID:PGID (make secrets.push runs it)
       <stack>/
         compose.yaml     the service
         .env.example     every host-specific value, with comments
@@ -55,6 +56,7 @@ The host comes from `~/.config/homelab/config.mk` (dotfiles renders it from
     make deploy.diff / deploy                 rsync the repo to the host (.env, rclone.conf untouched)
     make up.<stack> / logs.<stack> / update.<stack>   docker compose on the host
     make lint                                 compose config, shellcheck, pre-commit
+                                              (GitHub Actions runs the same on every push and PR)
     make secrets.pull / secrets.push          host-side .env, compose.override.yaml, rclone.conf, config/* <-> gitignored tree copy;
                                               they come from ~/.config/homelab/<stack>/ (dotfiles) when present
 
