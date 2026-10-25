@@ -5,7 +5,7 @@
   "schedule": ["before 9am on saturday"],
   "dependencyDashboard": true,
   "semanticCommits": "enabled",
-  "semanticCommitType": "build",
+  "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
   "labels": ["deps"],
   "prConcurrentLimit": 5,
@@ -13,6 +13,12 @@
     "enabled": true
   },
   "packageRules": [
+    {
+      "description": "A postgres major is a dump/restore done by hand (miniflux/README.md), no PR for it",
+      "matchPackageNames": ["postgres"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
     {
       "description": "Image minor/patch bumps of every stack in one weekly PR",
       "matchManagers": ["docker-compose"],
@@ -29,6 +35,17 @@
       "description": "Tooling pins (pre-commit hooks) in their own PR",
       "matchManagers": ["pre-commit"],
       "groupName": "pre-commit hooks"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "shellcheck release installed by the CI lint job",
+      "managerFilePatterns": ["/^\\.github/workflows/ci\\.yml$/"],
+      "matchStrings": ["SHELLCHECK_VERSION: (?<currentValue>\\S+)"],
+      "depNameTemplate": "koalaman/shellcheck",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ]
 }

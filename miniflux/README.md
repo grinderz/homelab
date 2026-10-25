@@ -26,6 +26,6 @@ and its own postgres (per-stack database, nothing shared), data under
   (keeps `DUMP_KEEP`); backrest backs those up and excludes the live `db/`.
   Restore: `docker compose exec -T db pg_restore -U miniflux -d miniflux --clean --no-owner --role=miniflux < dump`.
 - Postgres major upgrade (16 → 17/18): dump, bump the image tag and `DATA_DIR`
-  to a new directory, restore — Renovate opens the major PR, do not merge it
-  blindly.
+  to a new directory, restore. Renovate does not open PRs for postgres majors
+  (`renovate.json`), check for a new major by hand.
 - Logs: `make logs.miniflux`; feed polling errors show up per feed in the UI.
